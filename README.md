@@ -1,41 +1,67 @@
-# Credit Card Default Prediction Using Random Forest (ES 335)
+# Credit Card Default Prediction Using Random Forest
 
-Team: Vipra Madanala (25110351), Adarasandi Sai Ashwika (25110010)
+**ES 335 Machine Learning course project**
 
-Live website: https://adarasandiashwika.github.io/credit-card-default-rf/
+**Team:** Vipra Madanala (25110351), Adarasandi Sai Ashwika (25110010)
 
-## Question
-Can information from April-September 2005 predict whether a credit card client defaults in October 2005? One row = one client. Target: `default.payment.next.month`.
+**Live website:** https://adarasandiashwika.github.io/credit-card-default-rf/
 
-## Repository layout
+**Repository:** https://github.com/adarasandiashwika/credit-card-default-rf
+
+---
+
+## 1. Project summary
+We study whether information from April to September 2005 can predict whether a credit card client defaults on their October 2005 payment. One row is one client. The target is `default.payment.next.month`. We compare a majority-class baseline, a repayment-status rule and a single decision tree with a tuned random forest, evaluated with precision, recall, F1, ROC-AUC and average precision. The website presents the full reasoning and three interactive sections.
+
+## 2. Contributions
+- **Vipra Madanala (25110351):** machine-learning work in the notebook: preprocessing, data split, baselines, random forest training and tuning, final evaluation, and error analysis.
+- **Adarasandi Sai Ashwika (25110010):** rechecked the notebook code and updated the export step so the notebook generates all website data and packages it as a ZIP; built the project website and its interactive sections; GitHub Pages deployment and repository organisation.
+- **Both:** reviewed all results and can explain the full project.
+
+## 3. Repository layout
 ```
-index.html, style.css, ix.css, script.js   website (static, GitHub Pages)
-data/                                  tree_count_results.json, model_comparison.json, threshold_results.json
-exports/                               train_ids.csv, validation_ids.csv, test_ids.csv, feature_importance.csv,
-                                       permutation_importance.csv, tree_count_experiment_50_100_200_300.csv, random_forest.joblib
-es335-ml-project-notebook.ipynb        full analysis with saved outputs
-requirements.txt                       pandas==2.3.3, numpy==2.1.3, scikit-learn==1.6.1, matplotlib, seaborn, joblib
+index.html, style.css, ix.css, script.js   Website (static, hosted on GitHub Pages)
+data/                                      Data loaded by the website's interactive sections
+    tree_count_results.json
+    model_comparison.json
+    threshold_results.json
+exports/                                   Reproducibility files
+    train_ids.csv, validation_ids.csv, test_ids.csv      Exact customer IDs of each split
+    feature_importance.csv, permutation_importance.csv
+    tree_count_experiment_50_100_200_300.csv
+    random_forest.joblib                                 Final trained model
+es335-ml-project-notebook.ipynb            Full analysis with saved outputs
+requirements.txt                           Python package versions
 ```
 
-## Data access
-Download `UCI_Credit_Card.csv` from Kaggle (`uciml/default-of-credit-card-clients-dataset`), original source UCI Machine Learning Repository. The raw data is not redistributed here.
+## 4. Data access
+- Dataset: *Default of Credit Card Clients* (UCI Machine Learning Repository; Yeh & Lien, 2009).
+- Download `UCI_Credit_Card.csv` from Kaggle: `uciml/default-of-credit-card-clients-dataset`.
+- The raw data file is not redistributed in this repository.
 
-## Setup and run
+## 5. Setup and run
 ```
+git clone https://github.com/adarasandiashwika/credit-card-default-rf
+cd credit-card-default-rf
 pip install -r requirements.txt
-jupyter notebook es335-ml-project-notebook.ipynb   # edit the CSV path in the loading cell, then Run All
+jupyter notebook es335-ml-project-notebook.ipynb
 ```
-Splits: stratified 70/15/15, `random_state=42`; exact IDs are in `exports/`. Test set is used once, for the final model.
+Place `UCI_Credit_Card.csv` where the notebook's loading cell expects it (edit the path in that cell), then choose **Run All**. The last cells write the files in `exports/` and `data/` and rebuild `project_exports.zip`.
 
-## View the website locally 
+## 6. Data split and evaluation design
+- Stratified random split: 70% train (21,000), 15% validation (4,500), 15% test (4,500), `random_state=42`. The exact customer IDs are in `exports/`.
+- Models are fitted on the training set, and all comparison and tuning use the validation set.
+- The test set is used once, for the final selected model.
+
+## 7. View the website locally
 ```
-python -m http.server     # then open http://localhost:8000
+python -m http.server 5500
 ```
-(Opening index.html directly will not load the JSON data files.)
+Then open `http://localhost:5500`. Opening `index.html` directly from the file system will not load the JSON data files.
 
-## AI-use disclosure
-Claude (Anthropic) was used for brainstorming interactions, debugging the export code, and writing/testing the website HTML, CSS and JavaScript. We ran the notebook ourselves and checked the outputs. (Edit to match your actual use.)
+## 8. AI-use disclosure
+We used Claude (Anthropic) for brainstorming the interactive features, debugging and extending the notebook's export code, and writing and testing the website's HTML, CSS and JavaScript. We ran the notebook ourselves and checked the reported results against its outputs. We are responsible for all results and can explain any part of the work.
 
-## References
-- Yeh, I. C., & Lien, C. H. (2009). Expert Systems with Applications, 36(2), 2473-2480.
-- Pedregosa et al. (2011). Scikit-learn: Machine Learning in Python. JMLR 12, 2825-2830.
+## 9. References
+- Yeh, I. C., & Lien, C. H. (2009). The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients. *Expert Systems with Applications*, 36(2), 2473-2480.
+- Pedregosa et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR*, 12, 2825-2830.
