@@ -1,0 +1,248 @@
+{
+  "description": "Validation-set performance versus number of trees. 'curve' = first k trees of the final 300-tree forest (no retraining). 'retrained_selected_config' = separately trained forests with the selected settings. 'retrained_depth15_leaf20' = the earlier one-factor experiment (max_depth=15, min_samples_leaf=20).",
+  "selected_config": {
+    "max_depth": 12,
+    "min_samples_leaf": 10,
+    "max_features": 0.5,
+    "class_weight": "balanced",
+    "bootstrap": true,
+    "random_state": 42
+  },
+  "bootstrap": {
+    "resamples": 1000,
+    "interval": "95% percentile, F1 only"
+  },
+  "curve": [
+    {
+      "n_estimators": 1,
+      "val_accuracy": 0.743111,
+      "val_precision": 0.432523,
+      "val_recall": 0.518593,
+      "val_f1": 0.471664,
+      "val_f1_lo": 0.447023,
+      "val_f1_hi": 0.496604,
+      "val_pr_auc": 0.453705
+    },
+    {
+      "n_estimators": 2,
+      "val_accuracy": 0.742222,
+      "val_precision": 0.434783,
+      "val_recall": 0.552764,
+      "val_f1": 0.486726,
+      "val_f1_lo": 0.45972,
+      "val_f1_hi": 0.509637,
+      "val_pr_auc": 0.477785
+    },
+    {
+      "n_estimators": 3,
+      "val_accuracy": 0.756,
+      "val_precision": 0.458232,
+      "val_recall": 0.567839,
+      "val_f1": 0.507181,
+      "val_f1_lo": 0.480581,
+      "val_f1_hi": 0.531854,
+      "val_pr_auc": 0.497349
+    },
+    {
+      "n_estimators": 5,
+      "val_accuracy": 0.771111,
+      "val_precision": 0.484901,
+      "val_recall": 0.564824,
+      "val_f1": 0.52182,
+      "val_f1_lo": 0.493859,
+      "val_f1_hi": 0.547225,
+      "val_pr_auc": 0.514945
+    },
+    {
+      "n_estimators": 10,
+      "val_accuracy": 0.784667,
+      "val_precision": 0.512037,
+      "val_recall": 0.555779,
+      "val_f1": 0.533012,
+      "val_f1_lo": 0.506801,
+      "val_f1_hi": 0.558486,
+      "val_pr_auc": 0.529291
+    },
+    {
+      "n_estimators": 15,
+      "val_accuracy": 0.784,
+      "val_precision": 0.510798,
+      "val_recall": 0.546734,
+      "val_f1": 0.528155,
+      "val_f1_lo": 0.50204,
+      "val_f1_hi": 0.554371,
+      "val_pr_auc": 0.532523
+    },
+    {
+      "n_estimators": 20,
+      "val_accuracy": 0.786667,
+      "val_precision": 0.516401,
+      "val_recall": 0.553769,
+      "val_f1": 0.534433,
+      "val_f1_lo": 0.508686,
+      "val_f1_hi": 0.560268,
+      "val_pr_auc": 0.535637
+    },
+    {
+      "n_estimators": 30,
+      "val_accuracy": 0.79,
+      "val_precision": 0.523496,
+      "val_recall": 0.559799,
+      "val_f1": 0.541039,
+      "val_f1_lo": 0.514481,
+      "val_f1_hi": 0.567733,
+      "val_pr_auc": 0.540958
+    },
+    {
+      "n_estimators": 40,
+      "val_accuracy": 0.791556,
+      "val_precision": 0.527221,
+      "val_recall": 0.554774,
+      "val_f1": 0.540646,
+      "val_f1_lo": 0.515322,
+      "val_f1_hi": 0.568094,
+      "val_pr_auc": 0.540249
+    },
+    {
+      "n_estimators": 50,
+      "val_accuracy": 0.788222,
+      "val_precision": 0.519924,
+      "val_recall": 0.550754,
+      "val_f1": 0.534895,
+      "val_f1_lo": 0.509018,
+      "val_f1_hi": 0.561601,
+      "val_pr_auc": 0.540158
+    },
+    {
+      "n_estimators": 75,
+      "val_accuracy": 0.791778,
+      "val_precision": 0.527725,
+      "val_recall": 0.554774,
+      "val_f1": 0.540911,
+      "val_f1_lo": 0.516094,
+      "val_f1_hi": 0.56825,
+      "val_pr_auc": 0.544679
+    },
+    {
+      "n_estimators": 100,
+      "val_accuracy": 0.792,
+      "val_precision": 0.52823,
+      "val_recall": 0.554774,
+      "val_f1": 0.541176,
+      "val_f1_lo": 0.515066,
+      "val_f1_hi": 0.56808,
+      "val_pr_auc": 0.543968
+    },
+    {
+      "n_estimators": 150,
+      "val_accuracy": 0.793333,
+      "val_precision": 0.530864,
+      "val_recall": 0.561809,
+      "val_f1": 0.545898,
+      "val_f1_lo": 0.521136,
+      "val_f1_hi": 0.57338,
+      "val_pr_auc": 0.54512
+    },
+    {
+      "n_estimators": 200,
+      "val_accuracy": 0.791333,
+      "val_precision": 0.526465,
+      "val_recall": 0.559799,
+      "val_f1": 0.542621,
+      "val_f1_lo": 0.517073,
+      "val_f1_hi": 0.570498,
+      "val_pr_auc": 0.54632
+    },
+    {
+      "n_estimators": 250,
+      "val_accuracy": 0.791111,
+      "val_precision": 0.526017,
+      "val_recall": 0.558794,
+      "val_f1": 0.54191,
+      "val_f1_lo": 0.516349,
+      "val_f1_hi": 0.569673,
+      "val_pr_auc": 0.54743
+    },
+    {
+      "n_estimators": 300,
+      "val_accuracy": 0.792889,
+      "val_precision": 0.529858,
+      "val_recall": 0.561809,
+      "val_f1": 0.545366,
+      "val_f1_lo": 0.519642,
+      "val_f1_hi": 0.572546,
+      "val_pr_auc": 0.547956
+    }
+  ],
+  "retrained_selected_config": [
+    {
+      "n_estimators": 300,
+      "val_accuracy": 0.792889,
+      "val_precision": 0.529858,
+      "val_recall": 0.561809,
+      "val_f1": 0.545366,
+      "val_pr_auc": 0.547956,
+      "oob_accuracy": 0.792143
+    },
+    {
+      "n_estimators": 500,
+      "val_accuracy": 0.791778,
+      "val_precision": 0.527567,
+      "val_recall": 0.557789,
+      "val_f1": 0.542257,
+      "val_pr_auc": 0.547459,
+      "oob_accuracy": 0.792238
+    },
+    {
+      "n_estimators": 1000,
+      "val_accuracy": 0.790889,
+      "val_precision": 0.525665,
+      "val_recall": 0.555779,
+      "val_f1": 0.540303,
+      "val_pr_auc": 0.548476,
+      "oob_accuracy": 0.792619
+    }
+  ],
+  "retrained_depth15_leaf20": [
+    {
+      "n_estimators": 50,
+      "train_f1": 0.646873,
+      "val_accuracy": 0.782889,
+      "val_precision": 0.508094,
+      "val_recall": 0.567839,
+      "val_f1": 0.536308,
+      "val_pr_auc": 0.545381,
+      "oob_accuracy": 0.781952
+    },
+    {
+      "n_estimators": 100,
+      "train_f1": 0.645904,
+      "val_accuracy": 0.785111,
+      "val_precision": 0.51275,
+      "val_recall": 0.565829,
+      "val_f1": 0.537984,
+      "val_pr_auc": 0.546648,
+      "oob_accuracy": 0.783286
+    },
+    {
+      "n_estimators": 200,
+      "train_f1": 0.649083,
+      "val_accuracy": 0.786667,
+      "val_precision": 0.516011,
+      "val_recall": 0.566834,
+      "val_f1": 0.54023,
+      "val_pr_auc": 0.545074,
+      "oob_accuracy": 0.785952
+    },
+    {
+      "n_estimators": 300,
+      "train_f1": 0.647269,
+      "val_accuracy": 0.787111,
+      "val_precision": 0.516833,
+      "val_recall": 0.570854,
+      "val_f1": 0.542502,
+      "val_pr_auc": 0.546615,
+      "oob_accuracy": 0.786667
+    }
+  ]
+}

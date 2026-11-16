@@ -1,0 +1,136 @@
+/* ==========================================================================
+   ix.css  -  styles for the interactive sections
+   Everything is scoped under .ix so it will not clash with your site's CSS.
+   Change the colours in the first block if you want a different palette.
+   ========================================================================== */
+.ix {
+  --ix-text: #1b2430;
+  --ix-muted: #566274;
+  --ix-border: #d5dbe3;
+  --ix-surface: #ffffff;
+  --ix-soft: #f3f6fa;
+  --ix-a: #1f5fbf;      /* main series (blue)   */
+  --ix-b: #c4570c;      /* second series (orange) */
+  --ix-c: #2a7f62;      /* third series (green) */
+  --ix-focus: #0b3d91;
+  color: var(--ix-text);
+  margin: 1.5rem 0;
+}
+.ix *, .ix *::before, .ix *::after { box-sizing: border-box; }
+
+.ix-panel {
+  background: var(--ix-surface);
+  border: 1px solid var(--ix-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+@media (min-width: 640px) { .ix-panel { padding: 1.25rem 1.5rem; } }
+
+.ix-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin: 0 0 .75rem; }
+.ix-label { font-weight: 600; }
+.ix-big { font-size: 1.35rem; font-weight: 700; color: var(--ix-a); font-variant-numeric: tabular-nums; }
+.ix-note { color: var(--ix-muted); font-size: .9rem; margin: .5rem 0 0; }
+.ix-error { color: #8a1f11; background: #fdecea; border: 1px solid #f3b8b0; border-radius: 8px; padding: .75rem 1rem; }
+.ix-loading { color: var(--ix-muted); }
+
+/* ---- slider ------------------------------------------------------------ */
+.ix input[type="range"] { width: 100%; accent-color: var(--ix-a); height: 2rem; margin: 0; cursor: pointer; }
+.ix input[type="range"]:focus-visible,
+.ix button:focus-visible,
+.ix summary:focus-visible { outline: 3px solid var(--ix-focus); outline-offset: 2px; }
+
+/* ---- chips / buttons --------------------------------------------------- */
+.ix-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .75rem; }
+.ix-chip {
+  font: inherit; font-size: .9rem; cursor: pointer; color: var(--ix-text);
+  background: var(--ix-soft); border: 1px solid var(--ix-border); border-radius: 999px;
+  padding: .3rem .8rem; min-height: 2.25rem;
+}
+.ix-chip:hover { border-color: var(--ix-a); }
+.ix-chip[aria-pressed="true"] { background: var(--ix-a); border-color: var(--ix-a); color: #fff; }
+
+/* ---- metric cards ------------------------------------------------------ */
+.ix-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .6rem; margin: .5rem 0 1rem; }
+.ix-card { background: var(--ix-soft); border: 1px solid var(--ix-border); border-radius: 10px; padding: .6rem .75rem; }
+.ix-card-label { font-size: .8rem; color: var(--ix-muted); text-transform: uppercase; letter-spacing: .03em; }
+.ix-card-value { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.ix-card-delta { font-size: .8rem; color: var(--ix-muted); font-variant-numeric: tabular-nums; }
+
+/* ---- chart ------------------------------------------------------------- */
+.ix-chart { width: 100%; touch-action: pan-y; cursor: ew-resize; user-select: none; -webkit-user-select: none; }
+.ix-chart svg { display: block; max-width: 100%; height: auto; }
+.ix-grid { stroke: #e3e8ef; stroke-width: 1; }
+.ix-axis { stroke: #8a94a3; stroke-width: 1; }
+.ix-tick { font-size: 12px; fill: var(--ix-muted); font-family: inherit; }
+.ix-axis-label { font-size: 12px; fill: var(--ix-text); font-family: inherit; }
+.ix-line-a { stroke: var(--ix-a); fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.ix-line-b { stroke: var(--ix-b); fill: none; stroke-width: 2.5; stroke-dasharray: 7 4; stroke-linejoin: round; }
+.ix-line-c { stroke: var(--ix-c); fill: none; stroke-width: 2.5; stroke-dasharray: 2 4; stroke-linecap: round; stroke-linejoin: round; }
+.ix-band { fill: var(--ix-a); opacity: .14; stroke: none; }
+.ix-dot-a { fill: var(--ix-a); }
+.ix-dot-b { fill: var(--ix-b); }
+.ix-dot-c { fill: var(--ix-c); }
+.ix-dot-sel { fill: #fff; stroke: var(--ix-text); stroke-width: 2.5; }
+.ix-diamond { fill: #fff; stroke: var(--ix-b); stroke-width: 2; }
+.ix-cursor { stroke: var(--ix-text); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.ix-star { fill: var(--ix-b); }
+
+.ix-legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: .4rem 0 0; padding: 0; list-style: none; font-size: .85rem; color: var(--ix-muted); }
+.ix-legend li { display: inline-flex; align-items: center; gap: .4rem; }
+.ix-swatch { width: 22px; height: 0; border-top: 3px solid var(--ix-a); }
+.ix-swatch.b { border-top: 3px dashed var(--ix-b); }
+.ix-swatch.c { border-top: 3px dotted var(--ix-c); }
+.ix-swatch.band { height: 10px; border: 0; background: var(--ix-a); opacity: .2; }
+.ix-swatch.dia { width: 10px; height: 10px; border: 2px solid var(--ix-b); background: #fff; transform: rotate(45deg); }
+
+.ix-readout { background: var(--ix-soft); border-left: 4px solid var(--ix-a); border-radius: 6px; padding: .7rem .9rem; margin: 1rem 0 0; line-height: 1.5; }
+
+/* ---- tables ------------------------------------------------------------ */
+.ix details { margin-top: 1rem; }
+.ix summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
+.ix-table-wrap { overflow-x: auto; margin: .5rem 0 1rem; }
+.ix table { border-collapse: collapse; width: 100%; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.ix caption { text-align: left; color: var(--ix-muted); padding: 0 0 .35rem; font-size: .85rem; }
+.ix th, .ix td { border-bottom: 1px solid var(--ix-border); padding: .35rem .6rem; text-align: right; white-space: nowrap; }
+.ix th:first-child, .ix td:first-child { text-align: left; }
+.ix th { background: var(--ix-soft); font-weight: 600; }
+
+/* ---- model comparison -------------------------------------------------- */
+.ix-bars { display: grid; gap: .5rem; margin: 0 0 1rem; }
+.ix-bar-row {
+  display: grid; grid-template-columns: minmax(96px, 150px) 1fr; align-items: center; gap: .6rem;
+  font: inherit; text-align: left; color: inherit; background: transparent;
+  border: 2px solid transparent; border-radius: 10px; padding: .35rem .4rem; cursor: pointer; width: 100%;
+}
+.ix-bar-row:hover { background: var(--ix-soft); }
+.ix-bar-row[aria-pressed="true"] { border-color: var(--ix-a); background: var(--ix-soft); }
+.ix-bar-name { font-weight: 600; font-size: .92rem; line-height: 1.2; }
+.ix-bar-track { position: relative; height: 1.5rem; background: #e9edf3; border-radius: 6px; overflow: hidden; }
+.ix-bar-fill { position: absolute; inset: 0 auto 0 0; background: var(--ix-a); border-radius: 6px 0 0 6px; opacity: .85; }
+.ix-bar-whisker { position: absolute; top: 50%; height: 2px; background: var(--ix-text); transform: translateY(-50%); }
+.ix-bar-whisker::before, .ix-bar-whisker::after { content: ""; position: absolute; top: -5px; width: 2px; height: 12px; background: var(--ix-text); }
+.ix-bar-whisker::before { left: 0; } .ix-bar-whisker::after { right: 0; }
+.ix-bar-value { position: absolute; right: .4rem; top: 50%; transform: translateY(-50%); font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ix-text); background: rgba(255,255,255,.85); padding: 0 .3rem; border-radius: 4px; }
+
+.ix-detail { display: grid; gap: 1rem; grid-template-columns: 1fr; border-top: 1px solid var(--ix-border); padding-top: 1rem; }
+@media (min-width: 720px) { .ix-detail { grid-template-columns: 1.3fr 1fr; } }
+.ix-detail h3 { margin: 0 0 .4rem; font-size: 1.15rem; }
+.ix-detail p { margin: 0 0 .6rem; line-height: 1.5; }
+
+.ix-cm { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px; font-size: .85rem; text-align: center; max-width: 380px; }
+.ix-cm > div { padding: .5rem .3rem; border-radius: 6px; }
+.ix-cm .hd { color: var(--ix-muted); font-weight: 600; display: flex; align-items: center; justify-content: center; }
+.ix-cm .cell { background: var(--ix-soft); border: 1px solid var(--ix-border); font-variant-numeric: tabular-nums; }
+.ix-cm .cell b { display: block; font-size: 1.25rem; }
+.ix-cm .good { background: #e5f2ec; border-color: #b6d8c8; }
+.ix-cm .bad { background: #fbeee4; border-color: #efcdb4; }
+
+/* ---- cost slider ------------------------------------------------------- */
+.ix-cost { background: var(--ix-soft); border: 1px dashed var(--ix-border); border-radius: 10px; padding: .75rem .9rem; margin-top: 1rem; }
+.ix-cost .ix-row { margin-bottom: .4rem; }
+.ix-link { font: inherit; background: none; border: 0; padding: 0; color: var(--ix-a); text-decoration: underline; cursor: pointer; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ix-bar-fill { transition: width .25s ease; }
+}
+@media print { .ix input[type="range"], .ix-chips { display: none; } }

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Credit Card Default Prediction Using Random Forest</title>
+  <meta name="description" content="ES 335 project: predicting credit card default with a random forest, compared with simple baselines, with interactive exploration of the results.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ix.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker" style="color:#cfe0ff">ES 335 &middot; Machine Learning Course Project</div>
+    <h1>Credit Card Default Prediction Using Random Forest</h1>
+    <p class="lead">Can a customer's repayment history and account information from April&ndash;September 2005 tell us who will miss their payment in October 2005, and does a random forest do that better than simple alternatives?</p>
+    <p class="meta">Vipra Madanala (25110351) &middot; Adarasandi Sai Ashwika (25110010)</p>
+    <div class="links">
+      <a class="btn" href="YOUR_REPO_URL">Source repository</a>
+      <a class="btn ghost" href="#tuning">Jump to the interactions</a>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <ul>
+    <li><a href="#question">Question</a></li>
+    <li><a href="#data">Data</a></li>
+    <li><a href="#preprocessing">Preprocessing</a></li>
+    <li><a href="#methods">Methods</a></li>
+    <li><a href="#evaluation">Evaluation</a></li>
+    <li><a href="#tuning">Tuning</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#errors">Errors</a></li>
+    <li><a href="#limitations">Limitations</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#reproduce">Reproduce</a></li>
+  </ul>
+</nav>
+
+<main id="main" class="wrap">
+
+<!-- ===================================================== 1. QUESTION -->
+<section id="question" aria-labelledby="h-question">
+  <h2 id="h-question">1. The question</h2>
+  <p class="lead">Using what a bank knew at the end of September 2005, can we predict which credit card customers will <strong>default on their October 2005 payment</strong>?</p>
+  <ul class="tight">
+    <li><strong>One row</strong> = one credit card client in Taiwan, with their demographics, credit limit, six months of repayment status, bill amounts and payment amounts.</li>
+    <li><strong>Target</strong> = <code>default.payment.next.month</code> (1 = defaults in October 2005, 0 = does not).</li>
+    <li><strong>When the prediction is made:</strong> after the September 2005 statement. Only April&ndash;September information is used.</li>
+    <li><strong>Why it matters:</strong> the two mistakes are not equal. A <em>missed default</em> (false negative) is a loss the lender did not see coming; a <em>false alarm</em> (false positive) means a reliable customer is treated as risky. We therefore report precision, recall and F1, not accuracy alone.</li>
+  </ul>
+  <div class="callout warn"><strong>Scope of the claim.</strong> This is a study of historical Taiwanese card data. The model predicts association with default, not its causes, and is not meant for real lending decisions.</div>
+</section>
+
+<!-- ========================================================== 2. DATA -->
+<section id="data" aria-labelledby="h-data">
+  <h2 id="h-data">2. The data</h2>
+  <p>We use the <em>Default of Credit Card Clients</em> dataset from the UCI Machine Learning Repository (Yeh &amp; Lien, 2009), loaded from its Kaggle copy (<code>uciml/default-of-credit-card-clients-dataset</code>). It is publicly available; we do not redistribute the raw file in this repository.</p>
+  <div class="grid">
+    <div class="stat"><b>30,000</b><span>customers (rows)</span></div>
+    <div class="stat"><b>23</b><span>input features</span></div>
+    <div class="stat"><b>22.1%</b><span>default (6,636 customers)</span></div>
+    <div class="stat"><b>0</b><span>missing values</span></div>
+  </div>
+
+  <h3>Key variables</h3>
+  <ul class="tight">
+    <li><code>LIMIT_BAL</code>: credit limit. <code>SEX</code>, <code>EDUCATION</code>, <code>MARRIAGE</code>, <code>AGE</code>: demographics.</li>
+    <li><code>PAY_0</code>, <code>PAY_2</code>&ndash;<code>PAY_6</code>: repayment status for September back to April (&minus;1 = paid on time, 1&ndash;9 = months of delay). <code>PAY_0</code> is the most recent month.</li>
+    <li><code>BILL_AMT1</code>&ndash;<code>6</code>: bill statement amounts. <code>PAY_AMT1</code>&ndash;<code>6</code>: amounts paid.</li>
+  </ul>
+
+  <h3>What the data tells us first</h3>
+  <p>Default is strongly linked to recent repayment status. Customers already one month late in September are much more likely to default in October.</p>
+  <div class="table-wrap">
+    <table class="data">
+      <caption>Default rate by September repayment status (<code>PAY_0</code>), full dataset</caption>
+      <thead><tr><th>PAY_0</th><th>Customers</th><th>Default rate</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>14,737</td><td>12.81%</td></tr>
+        <tr><td>1</td><td>3,688</td><td>33.95%</td></tr>
+        <tr><td>2</td><td>2,667</td><td>69.14%</td></tr>
+        <tr><td>3</td><td>322</td><td>75.78%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Data-quality issues we found</h3>
+  <ul class="tight">
+    <li><strong>Undocumented category codes.</strong> <code>EDUCATION</code> has codes 0, 5, 6 outside the documented 1&ndash;4 (345 customers, 1.15%); <code>MARRIAGE</code> has code 0 (54 customers, 0.18%). Repayment status contains codes &minus;2 and 0 that the dataset description does not explain.</li>
+    <li><strong>Class imbalance.</strong> About 78% of customers do not default, so a model that never predicts default is already about 78% accurate.</li>
+    <li><strong>Duplicate feature profiles.</strong> No duplicate IDs, but 56 rows share identical features with another customer.</li>
+    <li><strong>Negative bill amounts</strong> (credits or overpayments) and very large values; skewed amounts.</li>
+  </ul>
+</section>
+
+<!-- ================================================= 3. PREPROCESSING -->
+<section id="preprocessing" aria-labelledby="h-prep">
+  <h2 id="h-prep">3. Preprocessing and why</h2>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Decision</th><th style="text-align:left">Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Group <code>EDUCATION</code> codes 0, 5, 6 with &ldquo;other&rdquo; (4); <code>MARRIAGE</code> 0 with &ldquo;other&rdquo; (3)</td><td style="text-align:left">Keeps every customer while avoiding tiny categories with unclear meaning. A practical assumption, not evidence the groups are equivalent.</td></tr>
+        <tr><td>Keep repayment-status codes unchanged</td><td style="text-align:left">Preserves the original information without guessing what undocumented codes mean.</td></tr>
+        <tr><td>Keep duplicate feature profiles</td><td style="text-align:left">Different customers can share identical attributes; IDs are unique.</td></tr>
+        <tr><td>No scaling, no imputation</td><td style="text-align:left">Trees split on thresholds, so scaling is unnecessary, and there are no missing values.</td></tr>
+        <tr><td>Drop <code>ID</code></td><td style="text-align:left">An identifier carries no information about repayment.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>No leakage.</strong> The only transformation is a fixed recode of category labels. It learns nothing from the data, so it cannot leak information from validation or test customers. All 30,000 rows and 23 features are kept.</p>
+</section>
+
+<!-- ======================================================= 4. METHODS -->
+<section id="methods" aria-labelledby="h-methods">
+  <h2 id="h-methods">4. Baselines and methods</h2>
+  <p>We start with simple references and only then use a more complex model, so any gain from the random forest can be judged against something meaningful.</p>
+  <ul class="tight">
+    <li><strong>Majority-class baseline.</strong> Always predicts &ldquo;no default&rdquo;. Shows what class imbalance alone delivers.</li>
+    <li><strong>Repayment rule.</strong> Predict default when <code>PAY_0 &ge; 1</code> (already late in September). No training; uses one variable.</li>
+    <li><strong>Decision tree.</strong> One shallow, regularised tree (depth 5, at least 20 customers per leaf, balanced class weights).</li>
+    <li><strong>Random forest (main model).</strong> Many trees, each trained on a bootstrap sample and a random subset of features at each split; predictions are averaged. This reduces the instability of a single tree and can capture interactions between repayment history, bills and payments. Its assumptions are mild (no scaling, no linearity), but it is harder to interpret than a rule or a single tree.</li>
+  </ul>
+</section>
+
+<!-- ===================================================== 5. EVALUATION -->
+<section id="evaluation" aria-labelledby="h-eval">
+  <h2 id="h-eval">5. How we evaluated</h2>
+  <div class="grid">
+    <div class="stat"><b>21,000</b><span>training (70%)</span></div>
+    <div class="stat"><b>4,500</b><span>validation (15%)</span></div>
+    <div class="stat"><b>4,500</b><span>test (15%)</span></div>
+  </div>
+  <ul class="tight">
+    <li><strong>Split.</strong> Stratified random split (<code>random_state=42</code>), so each part has about 22.1% defaulters. Splits are disjoint (checked in code), and the exact customer IDs are saved in the repository.</li>
+    <li><strong>Roles.</strong> Models are fitted on <em>training</em>; every comparison and tuning decision uses <em>validation</em>; the <em>test</em> set was used once, for the final chosen model only.</li>
+    <li><strong>Metrics.</strong> <em>Precision</em>: of customers flagged, the share who really default. <em>Recall</em>: of real defaulters, the share we catch. <em>F1</em>: balance of the two. <em>Average precision (PR-AUC)</em> and <em>ROC-AUC</em>: quality of the probability ranking regardless of threshold. Accuracy is shown but interpreted against the 78% baseline.</li>
+    <li><strong>Selection criterion.</strong> Mainly validation F1, also looking at recall, average precision and model complexity.</li>
+  </ul>
+</section>
+
+<!-- ======================================================== 6. TUNING -->
+<section id="tuning" aria-labelledby="h-tuning">
+  <h2 id="h-tuning">6. Tuning the random forest</h2>
+  <p>We varied one setting at a time, then searched combinations. All of this used the validation set.</p>
+  <div class="table-wrap">
+    <table class="data">
+      <caption>What each experiment showed (validation set)</caption>
+      <thead><tr><th>Setting</th><th style="text-align:left">Finding</th></tr></thead>
+      <tbody>
+        <tr><td>Maximum depth (5 to unlimited)</td><td style="text-align:left">Training F1 rose from 0.43 to 0.999 while validation F1 stayed around 0.41&ndash;0.47: deeper trees memorise the training set (overfitting).</td></tr>
+        <tr><td>Class weighting</td><td style="text-align:left">&ldquo;Balanced&rdquo; raised recall (e.g. 0.354 to 0.577) and F1 (0.461 to 0.536 with leaf 20), at the cost of precision.</td></tr>
+        <tr><td>Features per split</td><td style="text-align:left">&ldquo;sqrt&rdquo;, 0.5 and all features gave similar F1 (0.512&ndash;0.538).</td></tr>
+        <tr><td>Combined grid (24 settings)</td><td style="text-align:left">Top configurations were close; the best three were compared with 300, 500 and 1000 trees.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout"><strong>Selected configuration:</strong> 300 trees, maximum depth 12, minimum 10 customers per leaf, 50% of features per split, balanced class weights, bootstrap, <code>random_state=42</code>. Validation F1 = 0.5454, average precision = 0.5480. Small validation differences do not prove these settings are universally best, and choosing from many settings on the same validation set makes validation scores slightly optimistic. This is why the test set was kept separate.</div>
+
+  <h3>Interaction 1: how many trees are enough?</h3>
+  <p>A forest averages its trees, so we evaluated the first <em>k</em> trees of the final forest on the validation set without retraining. The shaded band is a 95% bootstrap interval for F1, showing how much a 4,500-customer validation set can move the score by chance. Diamonds mark separately trained forests with 500 and 1000 trees. <strong>Try:</strong> drag from 1 tree up to 300 and compare the size of the changes with the width of the band.</p>
+  <div data-ix="trees"></div>
+  <p><strong>Takeaway.</strong> <!-- EDIT after you see your own curve --> Performance rises quickly over the first trees, then flattens. In our runs, forests of 500 and 1000 trees did not improve validation F1 (0.5423 and 0.5403 versus 0.5454 for 300 trees). We kept 300 trees; this shows more trees gave no clear gain, not that 300 is optimal.</p>
+</section>
+
+<!-- ======================================================== 7. RESULTS -->
+<section id="results" aria-labelledby="h-results">
+  <h2 id="h-results">7. Results</h2>
+
+  <h3>Model comparison (validation set)</h3>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th></tr></thead>
+      <tbody>
+        <tr><td>Majority class</td><td>0.7789</td><td>0.000</td><td>0.000</td><td>0.000</td></tr>
+        <tr><td>Repayment rule (<code>PAY_0 &ge; 1</code>)</td><td>0.7800</td><td>0.5026</td><td>0.4925</td><td>0.4975</td></tr>
+        <tr><td>Decision tree</td><td>0.7824</td><td>0.5076</td><td>0.5387</td><td>0.5227</td></tr>
+        <tr><td>Initial random forest (100 deep trees)</td><td>0.8156</td><td>0.6471</td><td>0.3648</td><td>0.4666</td></tr>
+        <tr class="hl"><td>Final random forest</td><td>0.7929</td><td>0.5299</td><td>0.5618</td><td>0.5454</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The majority baseline has 77.9% accuracy yet finds no defaulters. The initial forest has the highest accuracy and precision but misses most defaulters; its training F1 is 0.9988, so it is overfitted. The tuned forest has the best F1 and recall, though the gain over the simple repayment rule is moderate (F1 0.4975 to 0.5454).</p>
+
+  <h3>Interaction 2: compare the models</h3>
+  <p>Pick a metric and click a model to see its confusion matrix. Switch to accuracy and then to recall to see why accuracy alone misleads. The whiskers on F1 are bootstrap intervals; overlapping whiskers mean a difference may be noise.</p>
+  <div data-ix="models"></div>
+<p class="ix-note" style="margin-top:.6rem">Average precision and ROC-AUC need predicted probabilities, so they are not available for the two rule-based baselines, which give only yes/no decisions. Compare those two on F1, precision and recall.</p>
+  <h3>Final test-set result</h3>
+  <p>The selected model was evaluated once on the 4,500 untouched test customers.</p>
+  <div class="grid">
+    <div class="stat"><b>0.7924</b><span>accuracy</span></div>
+    <div class="stat"><b>0.5291</b><span>precision</span></div>
+    <div class="stat"><b>0.5663</b><span>recall</span></div>
+    <div class="stat"><b>0.5470</b><span>F1-score</span></div>
+    <div class="stat"><b>0.7774</b><span>ROC-AUC</span></div>
+    <div class="stat"><b>0.5535</b><span>average precision (default rate 0.221)</span></div>
+  </div>
+  <div class="cm" role="table" aria-label="Test confusion matrix">
+    <div></div><div class="h">Predicted: no default</div><div class="h">Predicted: default</div>
+    <div class="h">Actual: no default</div><div class="c g"><b>3,002</b>correct</div><div class="c b"><b>502</b>false alarms</div>
+    <div class="h">Actual: default</div><div class="c b"><b>432</b>missed defaults</div><div class="c g"><b>564</b>caught defaults</div>
+  </div>
+  <p>Test F1 (0.5470) is close to validation F1 (0.5454), so we see no sign that tuning overfitted the validation set. The model still misses 432 of 996 defaulters (43%).</p>
+</section>
+
+<!-- ======================================================== 8. ERRORS -->
+<section id="errors" aria-labelledby="h-errors">
+  <h2 id="h-errors">8. Error analysis</h2>
+  <h3>Who does the model miss?</h3>
+  <p>We split the test customers by whether September's repayment code was positive (<code>PAY_0 &ge; 1</code>, already late).</p>
+  <ul class="tight">
+    <li>With a positive delay code, the model detects <strong>90.43%</strong> of actual defaulters. Without one, only <strong>20.87%</strong>.</li>
+    <li>Of the 432 missed defaults, <strong>383 (88.66%)</strong> are customers with no positive delay code.</li>
+  </ul>
+  <p>The model relies heavily on recent repayment behaviour and struggles with customers who default despite showing no delay. These are exactly the less obvious risks a lender would most want to find.</p>
+
+  <h3>What the forest relies on</h3>
+  <p>Gini feature importance (top 10, final model). Importance describes what the model uses, not what causes default, and it can favour continuous variables.</p>
+  <div class="bars" role="img" aria-label="Bar chart of the top ten Gini feature importances. PAY_0 is highest at 0.273.">
+    <div class="bar"><span>PAY_0</span><i style="width:100%"></i><span>0.273</span></div>
+    <div class="bar"><span>PAY_2</span><i style="width:37.7%"></i><span>0.103</span></div>
+    <div class="bar"><span>LIMIT_BAL</span><i style="width:18.3%"></i><span>0.050</span></div>
+    <div class="bar"><span>PAY_3</span><i style="width:18.2%"></i><span>0.050</span></div>
+    <div class="bar"><span>BILL_AMT1</span><i style="width:17.6%"></i><span>0.048</span></div>
+    <div class="bar"><span>PAY_AMT2</span><i style="width:17.0%"></i><span>0.046</span></div>
+    <div class="bar"><span>PAY_AMT3</span><i style="width:15.7%"></i><span>0.043</span></div>
+    <div class="bar"><span>PAY_AMT1</span><i style="width:13.8%"></i><span>0.038</span></div>
+    <div class="bar"><span>PAY_AMT4</span><i style="width:12.2%"></i><span>0.033</span></div>
+    <div class="bar"><span>BILL_AMT2</span><i style="width:12.1%"></i><span>0.033</span></div>
+  </div>
+
+  <h3>Interaction 3: missed defaults versus false alarms</h3>
+  <p>The forest outputs a probability, and the threshold decides who is flagged. Move it to see recall rise and precision fall. These results use the validation set, so the threshold is not tuned on the test data.</p>
+  <div data-ix="threshold"></div>
+</section>
+
+<!-- ==================================================== 9. LIMITATIONS -->
+<section id="limitations" aria-labelledby="h-lim">
+  <h2 id="h-lim">9. Limitations</h2>
+  <ul class="tight">
+    <li><strong>One dataset, one period, one country.</strong> Taiwanese cardholders in 2005. Results may not carry over to other times or markets.</li>
+    <li><strong>Random split, not time-based.</strong> All customers come from the same months, so the test score may be more optimistic than predicting a genuinely later period.</li>
+    <li><strong>Moderate performance.</strong> The tuned forest improves on the simple rule by a modest margin, and about 43% of test defaulters are still missed at the default 0.5 threshold.</li>
+    <li><strong>Hard cases remain.</strong> Most missed defaults are customers without a recent delay code.</li>
+    <li><strong>Uncertainty.</strong> A single split and seed; no repeated cross-validation. Tiny differences between top configurations are within noise (see the bands above).</li>
+    <li><strong>Threshold depends on costs we do not know.</strong> The cost slider is an illustration, not a finding.</li>
+    <li><strong>Sensitive attributes.</strong> Sex, age and marital status are among the inputs. Using them in real credit decisions would raise fairness and legal concerns; we did not test fairness across groups.</li>
+    <li><strong>Prediction is not causation.</strong> Feature importance shows what the model uses, not why customers default.</li>
+    <li><strong>Data issues.</strong> Undocumented codes were grouped or kept by assumption; no probability-calibration analysis was done.</li>
+  </ul>
+</section>
+
+<!-- ==================================================== 10. CONCLUSION -->
+<section id="conclusion" aria-labelledby="h-conc">
+  <h2 id="h-conc">10. Conclusion</h2>
+  <p>A tuned random forest (300 trees, depth 12) predicts October 2005 default with test F1 0.547 and ROC-AUC 0.777, better than the majority baseline (which finds no defaulters). On the validation set it also beat the repayment rule (F1 0.5454 versus 0.4975) and a single decision tree (0.5227). The improvement over the simple rule is real but moderate. Recent repayment status is the main signal, and the model's main weakness is customers who default without a prior delay. The number of trees mattered little beyond a few hundred, and the choice of threshold changes the balance between missed defaults and false alarms far more than small tuning differences.</p>
+  <h3>Who did what</h3>
+  <p><!-- EDIT: replace with your real contributions (needed for the viva) -->
+  <strong>Vipra Madanala: Machine learning analysis.</strong> 
+Vipra carried out the work in the notebook. She loaded and inspected the dataset,
+checked its quality problems, grouped the undocumented education and marriage codes,
+and built the stratified train, validation and test split. She implemented the
+baselines (majority class, repayment rule and decision tree), then trained and tuned
+the random forest through experiments on depth, leaf size, class weighting, feature
+sampling and number of trees. She selected the final model on the validation set,
+evaluated it once on the test set, carried out the error and feature-importance
+analysis, and exported the results used by the website.</p>
+
+<p> <strong>Adarasandi Sai Ashwika: Website and Presentation of results.</strong>
+I rechecked the full notebook code and updated its export step so that all the
+results needed for the website are included.I designed and built the project website. I structured it around the question,
+data, preprocessing, methods, evaluation, results, errors and limitations, and wrote
+the explanations for each stage, built the three interactive sections (number of
+trees, model comparison and decision threshold), connected them to the exported
+results, published the site on GitHub Pages, and organised the repository and README.</p>
+
+<p><strong>Shared work:</strong> Both of us reviewed the results and the website
+together, and each of us can explain the full pipeline, the evaluation design, the main
+limitations, and what would change if we altered the threshold or the number of trees.</p>
+</section>
+
+<!-- ==================================================== 11. REPRODUCE -->
+<section id="reproduce" aria-labelledby="h-repro">
+  <h2 id="h-repro">11. Reproduce this project</h2>
+  <p>Everything is in the <a href="https://github.com/adarasandiashwika/credit-card-default-rf">source repository</a>.</p>
+<pre><code>git clone https://github.com/adarasandiashwika/credit-card-default-rf
+cd credit-card-default-rf
+pip install -r requirements.txt     # pandas 2.3.3, numpy 2.1.3, scikit-learn 1.6.1, matplotlib, seaborn
+# Download UCI_Credit_Card.csv (see data access below) and set the path in the notebook
+jupyter notebook es335-ml-project-notebook.ipynb   # Run All</code></pre>
+  <ul class="tight">
+    <li><strong>Data access.</strong> Kaggle: <code>uciml/default-of-credit-card-clients-dataset</code> (original source: UCI Machine Learning Repository).</li>
+    <li><strong>Exact splits.</strong> <code>exports/train_ids.csv</code>, <code>validation_ids.csv</code>, <code>test_ids.csv</code> (stratified 70/15/15, seed 42).</li>
+    <li><strong>Full results.</strong> Model file, <code>threshold_results.json</code>, <code>tree_count_results.json</code>, <code>model_comparison.json</code>, <code>feature_importance.csv</code> and all experiment tables are in the repository.</li>
+  </ul>
+  <h3>AI-use disclosure</h3>
+  <p><!-- EDIT so it matches what you really did --> We used Claude (Anthropic) for brainstorming the interactive features, debugging the notebook's export code, and writing and testing the website's HTML, CSS and JavaScript. We ran the notebook ourselves and checked the reported numbers against its outputs. We take responsibility for all results.</p>
+  <h3>References</h3>
+  <ul class="tight">
+    <li>Yeh, I. C., &amp; Lien, C. H. (2009). The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients. <em>Expert Systems with Applications</em>, 36(2), 2473&ndash;2480.</li>
+    <li>Pedregosa et al. (2011). Scikit-learn: Machine Learning in Python. <em>JMLR</em> 12, 2825&ndash;2830.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer><div class="wrap">ES 335 course project &middot; Vipra Madanala &amp; Adarasandi Sai Ashwika &middot; Historical data, for study only.</div></footer>
+
+<script src="script.js" defer></script>
+<script>
+/* highlight the current section in the top navigation */
+(function () {
+  var links = document.querySelectorAll("nav.toc a");
+  if (!("IntersectionObserver" in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) links.forEach(function (a) {
+        a.classList.toggle("active", a.getAttribute("href") === "#" + e.target.id);
+      });
+    });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  document.querySelectorAll("main section").forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>
