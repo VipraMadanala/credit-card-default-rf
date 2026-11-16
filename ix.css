@@ -134,3 +134,33 @@
   .ix-bar-fill { transition: width .25s ease; }
 }
 @media print { .ix input[type="range"], .ix-chips { display: none; } }
+
+/* ---- Final Random Forest example explorer ---- */
+
+/* ---- Try it: interactive scorer ---- */
+.ty-presets{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .6rem;margin:0 0 .4rem}
+.ty-layout{display:grid;gap:1.2rem;grid-template-columns:1fr;margin-top:.8rem}
+@media (min-width:820px){.ty-layout{grid-template-columns:1.1fr 1fr}.ty-result{position:sticky;top:64px;align-self:start}}
+.ty-group{border:1px solid var(--ix-border);border-radius:10px;padding:.5rem .8rem .8rem;margin:0 0 .8rem}
+.ty-group legend{font-weight:700;font-size:.92rem;padding:0 .35rem}
+.ty-field{display:grid;grid-template-columns:minmax(110px,40%) 1fr auto;gap:.5rem;align-items:center;margin:.35rem 0}
+.ty-field label{font-size:.9rem}
+.ty-field input[type=number],.ty-field select{width:100%;padding:.4rem .5rem;border:1px solid var(--ix-border);border-radius:8px;font:inherit;background:#fff;color:var(--ix-text);grid-column:2 / span 2}
+.ty-field input[type=range]{grid-column:2}
+.ty-out{font-variant-numeric:tabular-nums;font-weight:700;min-width:2ch;text-align:right}
+.ty-adv summary{font-size:.92rem}
+.ty-result{border:1px solid var(--ix-border);border-radius:12px;padding:1rem;background:var(--ix-soft)}
+.ty-verdict{font-size:1.3rem;font-weight:800;line-height:1.25;padding:.5rem .7rem;border-radius:8px}
+.ty-verdict.good{background:#e5f2ec;color:#14543e}.ty-verdict.bad{background:#fbeee4;color:#8a3a05}
+.ty-prob{margin:.5rem 0 .3rem;font-weight:600;font-variant-numeric:tabular-nums}
+.ty-gauge{position:relative;height:14px;background:#e3e8ef;border-radius:999px;overflow:visible;margin:.4rem 0}
+.ty-gauge-fill{height:100%;background:var(--ix-a);border-radius:999px 0 0 999px}
+.ty-gauge-mark{position:absolute;top:-4px;width:3px;height:22px;transform:translateX(-50%)}
+.ty-gauge-mark.thr{background:var(--ix-text)}.ty-gauge-mark.bas{background:#8a94a3}
+.ty-line{margin:.5rem 0;font-size:.92rem;line-height:1.45}
+.ty-warn{background:#fff4e0;border-left:4px solid #d98200;color:#8a4b00;padding:.5rem .7rem;border-radius:6px;font-size:.88rem;margin:.6rem 0}
+.ty-drivers h4{margin:.8rem 0 .3rem;font-size:.95rem}
+.ty-drv{display:grid;grid-template-columns:96px 1fr 70px;gap:.5rem;align-items:center;font-size:.85rem;margin:.2rem 0}
+.ty-drv-track{background:#e3e8ef;border-radius:4px;height:.9rem;overflow:hidden}
+.ty-drv-track i{display:block;height:100%}.ty-drv-track i.up{background:var(--ix-b)}.ty-drv-track i.down{background:var(--ix-c)}
+.ty-drv-val{text-align:right;font-variant-numeric:tabular-nums}

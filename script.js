@@ -216,7 +216,11 @@
       var d15 = d.retrained_depth15_leaf20 || [];
       var METRICS = [["val_f1", "F1-score"], ["val_recall", "Recall"], ["val_precision", "Precision"],
                      ["val_pr_auc", "Average precision"], ["val_accuracy", "Accuracy"]];
-      var last = curve.length - 1, idx = last, metric = "val_f1";
+      var last = curve.length - 1, metric = "val_f1";
+      var finalN = d.final_n_estimators || curve[last].n_estimators;
+      var finalIdx = curve.findIndex(function (r) { return r.n_estimators === finalN; });
+      if (finalIdx < 0) finalIdx = last;
+      var idx = finalIdx;
       var sizes = curve.map(function (r) { return r.n_estimators; });
       var maxN = Math.max.apply(null, sizes.concat(sep.map(function (r) { return r.n_estimators; })));
 
@@ -224,7 +228,7 @@
       var slider = h("input", { type: "range", id: "ix-trees-slider", min: 0, max: last, step: 1, value: idx,
         "aria-label": "Number of trees in the forest" });
       var jumps = h("div", { class: "ix-chips", role: "group", "aria-label": "Jump to a size" });
-      [1, 10, 50, 100, 300].forEach(function (n) {
+      [1, 50, 100, 200, 300, 400, 500].forEach(function (n) {
         var i = sizes.indexOf(n);
         if (i >= 0) jumps.appendChild(h("button", { type: "button", class: "ix-chip", onclick: function () { idx = i; render(); } }, [n + (n === 1 ? " tree" : " trees")]));
       });
@@ -257,7 +261,7 @@
       ]));
 
       function render() {
-        var row = curve[idx], fin = curve[last];
+        var row = curve[idx], fin = curve[finalIdx];
         out.textContent = row.n_estimators + (row.n_estimators === 1 ? " tree" : " trees");
         slider.value = idx;
         slider.setAttribute("aria-valuetext", out.textContent);
@@ -267,8 +271,7 @@
         [["val_f1", "F1-score"], ["val_recall", "Recall"], ["val_precision", "Precision"],
          ["val_pr_auc", "Avg. precision"], ["val_accuracy", "Accuracy"]].forEach(function (mt) {
           cards.appendChild(card(mt[1], f3(row[mt[0]]),
-            idx === last ? "final model" : signed(row[mt[0]] - fin[mt[0]]) + " vs " + fin.n_estimators + " trees"));
-        });
+           idx === finalIdx ? "final model" : signed(row[mt[0]] - fin[mt[0]]) + " vs " + fin.n_estimators + " trees"));});
         setPressed(metricChips, METRICS.filter(function (x) { return x[0] === metric; })[0][1]);
 
         // chart
@@ -291,7 +294,7 @@
           onPick: function (x) { var i = nearestIndex(sizes, x, true); if (i !== idx) { idx = i; render(); } }
         });
         legend.innerHTML = "";
-        legend.appendChild(legendItem("", "First k trees of the final forest"));
+        legend.appendChild(legendItem("", "First k trees of one 1000-tree forest (first 300 = final model)"));
         if (useBand) legend.appendChild(legendItem("band", "95% bootstrap interval (F1)"));
         if (sep.length) legend.appendChild(legendItem("dia", "Forests trained separately (selected settings)"));
 
@@ -301,7 +304,7 @@
           pct(row.val_recall) + "</strong> of the real defaulters (recall) and <strong>" + pct(row.val_precision) +
           "</strong> of the customers it flags are real defaulters (precision). F1 = <strong>" + f3(row.val_f1) + "</strong>" +
           (half != null ? " (95% interval " + f3(row.val_f1_lo) + " to " + f3(row.val_f1_hi) + ")" : "") + ". ";
-        if (idx === last) {
+        if (idx === finalIdx) {
           txt += "This is the final model.";
           var bigger = sep.filter(function (r) { return r.n_estimators > fin.n_estimators; });
           if (bigger.length && half != null) {

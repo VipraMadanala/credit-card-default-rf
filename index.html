@@ -19,7 +19,7 @@
     <p class="meta">Vipra Madanala (25110351) &middot; Adarasandi Sai Ashwika (25110010)</p>
     <div class="links">
       <a class="btn" href="https://github.com/adarasandiashwika/credit-card-default-rf">Source repository</a>
-      <a class="btn ghost" href="#tuning">Jump to the interactions</a>
+      <a class="btn ghost" href="#try-it">Try the model</a>
     </div>
   </div>
 </header>
@@ -33,6 +33,7 @@
     <li><a href="#evaluation">Evaluation</a></li>
     <li><a href="#tuning">Tuning</a></li>
     <li><a href="#results">Results</a></li>
+    <li><a href="#try-it">Try it</a></li>
     <li><a href="#errors">Errors</a></li>
     <li><a href="#limitations">Limitations</a></li>
     <li><a href="#conclusion">Conclusion</a></li>
@@ -160,12 +161,12 @@
     </table>
   </div>
 
-  <div class="callout"><strong>Selected configuration:</strong> 300 trees, maximum depth 12, minimum 10 customers per leaf, 50% of features per split, balanced class weights, bootstrap, <code>random_state=42</code>. Validation F1 = 0.5454, average precision = 0.5480. Small validation differences do not prove these settings are universally best, and choosing from many settings on the same validation set makes validation scores slightly optimistic. This is why the test set was kept separate.</div>
+  <div class="callout"><strong>Selected configuration:</strong> 300 trees, maximum depth 12, minimum 10 customers per leaf, 50% of features per split, balanced class weights, bootstrap, <code>random_state=42</code>. Validation F1 = 0.5454, average precision = 0.5480. Small validation differences do not prove these settings are universally best, and choosing from many settings on the same validation set makes validation scores slightly optimistic. This is why the test set was kept separate. The tree-count curve peaks at 150 trees (F1 0.5459) but only 0.0005 above our 300-tree model, well inside the sampling noise, so we kept the 300 trees chosen earlier.</div>
 
   <h3>Interaction 1: how many trees are enough?</h3>
-  <p>A forest averages its trees, so we evaluated the first <em>k</em> trees of the final forest on the validation set without retraining. The shaded band is a 95% bootstrap interval for F1, showing how much a 4,500-customer validation set can move the score by chance. Diamonds mark separately trained forests with 500 and 1000 trees. <strong>Try:</strong> drag from 1 tree up to 300 and compare the size of the changes with the width of the band.</p>
+  <p>A forest averages its trees, so we evaluated the first <em>k</em> trees of the final forest on the validation set without retraining. The shaded band is a 95% bootstrap interval for F1, showing how much a 4,500-customer validation set can move the score by chance. Diamonds mark separately trained forests with 300,500 and 1000 trees. <strong>Try:</strong> drag from 1 tree up to 300 and compare the size of the changes with the width of the band.</p>
   <div data-ix="trees"></div>
-  <p><strong>Takeaway.</strong> <!-- EDIT after you see your own curve --> Performance rises quickly over the first trees, then flattens. In our runs, forests of 500 and 1000 trees did not improve validation F1 (0.5423 and 0.5403 versus 0.5454 for 300 trees). We kept 300 trees; this shows more trees gave no clear gain, not that 300 is optimal.</p>
+  <p><strong>Takeaway.</strong> Performance rises quickly over the first trees, then flattens: from about 150 trees onward, validation F1 stays between 0.540 and 0.546. The highest point on the curve is 150 trees (F1 0.5459), but that is only 0.0005 above our 300-tree model (0.5454), which is two false positives, far inside the 95% band. Average precision is slightly higher at 300 trees (0.5480 versus 0.5451). We kept the 300 trees selected earlier; 150 trees would perform about the same and train faster. This shows a plateau, not that 300 is optimal.</p>
 </section>
 
 <!-- ======================================================== 7. RESULTS -->
@@ -207,6 +208,15 @@
     <div class="h">Actual: default</div><div class="c b"><b>432</b>missed defaults</div><div class="c g"><b>564</b>caught defaults</div>
   </div>
   <p>Test F1 (0.5470) is close to validation F1 (0.5454), so we see no sign that tuning overfitted the validation set. The model still misses 432 of 996 defaulters (43%).</p>
+</section>
+
+<!-- TRY THE FINAL MODEL WITH EXAMPLES -->
+<section id="try-it" aria-labelledby="h-tryit">
+  <h2 id="h-tryit">Try it: score a customer yourself</h2>
+  <p>Set the inputs for a customer and see what our <strong>final random forest</strong> predicts. Start from one of three real held-out test customers, then edit 14 key inputs (or the other 9 under &ldquo;Advanced&rdquo;). Every input of the model is available, so the score is exactly what the trained model outputs.</p>
+  <p><strong>Try:</strong> load the borderline customer and change September repayment status from 0 to 1, then to 2. Next, raise the credit limit or the payments and see whether anything moves the score as much as recent lateness does.</p>
+  <div class="ix"><div id="tryit"><p class="ix-loading">Loading the model&hellip;</p></div></div>
+  <p class="ix-note">How to read it: the probability is the forest&rsquo;s average vote across 300 trees. &ldquo;Default&rdquo; is predicted when it exceeds 50%. The reality check compares the score with how often validation customers with similar scores really defaulted, so you can see how much trust a score deserves. The 3 starting customers come from the test set and are used only for display, never for tuning.</p>
 </section>
 
 <!-- ======================================================== 8. ERRORS -->
@@ -252,14 +262,14 @@
     <li><strong>Threshold depends on costs we do not know.</strong> The cost slider is an illustration, not a finding.</li>
     <li><strong>Sensitive attributes.</strong> Sex, age and marital status are among the inputs. Using them in real credit decisions would raise fairness and legal concerns; we did not test fairness across groups.</li>
     <li><strong>Prediction is not causation.</strong> Feature importance shows what the model uses, not why customers default.</li>
-    <li><strong>Data issues.</strong> Undocumented codes were grouped or kept by assumption; no probability-calibration analysis was done.</li>
+    <li><strong>Data issues.</strong> Undocumented codes were grouped or kept by assumption; no formal analysis analysis.</li>
   </ul>
 </section>
 
 <!-- ==================================================== 10. CONCLUSION -->
 <section id="conclusion" aria-labelledby="h-conc">
   <h2 id="h-conc">10. Conclusion</h2>
-  <p>A tuned random forest (300 trees, depth 12) predicts October 2005 default with test F1 0.547 and ROC-AUC 0.777, better than the majority baseline (which finds no defaulters). On the validation set it also beat the repayment rule (F1 0.5454 versus 0.4975) and a single decision tree (0.5227). The improvement over the simple rule is real but moderate. Recent repayment status is the main signal, and the model's main weakness is customers who default without a prior delay. The number of trees mattered little beyond a few hundred, and the choice of threshold changes the balance between missed defaults and false alarms far more than small tuning differences.</p>
+  <p>A tuned random forest (300 trees, depth 12) predicts October 2005 default with test F1 0.547 and ROC-AUC 0.777, better than the majority baseline (which finds no defaulters). On the validation set it also beat the repayment rule (F1 0.5454 versus 0.4975) and a single decision tree (0.5227). The improvement over the simple rule is real but moderate. Recent repayment status is the main signal, and the model's main weakness is customers who default without a prior delay. The number of trees mattered little beyond about 150, and the choice of threshold changes the balance between missed defaults and false alarms far more than small tuning differences.</p>
   <h3>Who did what</h3>
   <p><!-- EDIT: replace with your real contributions (needed for the viva) -->
   <strong>Vipra Madanala: Machine learning analysis.</strong> 
@@ -277,7 +287,7 @@ I rechecked the full notebook code and updated its export step so that all the
 results needed for the website are included.I designed and built the project website. I structured it around the question,
 data, preprocessing, methods, evaluation, results, errors and limitations, and wrote
 the explanations for each stage, built the three interactive sections (number of
-trees, model comparison and decision threshold), connected them to the exported
+trees, model comparison, decision threshold and Try-it scorer), connected them to the exported
 results, published the site on GitHub Pages, and organised the repository and README.</p>
 
 <p><strong>Shared work:</strong> Both of us reviewed the results and the website
@@ -313,6 +323,7 @@ jupyter notebook es335-ml-project-notebook.ipynb   # Run All</code></pre>
 <footer><div class="wrap">ES 335 course project &middot; Vipra Madanala &amp; Adarasandi Sai Ashwika &middot; Historical data, for study only.</div></footer>
 
 <script src="script.js" defer></script>
+<script src="tryit.js" defer></script>
 <script>
 /* highlight the current section in the top navigation */
 (function () {
