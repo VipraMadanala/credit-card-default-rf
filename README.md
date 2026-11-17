@@ -20,11 +20,12 @@ We study whether information from April to September 2005 can predict whether a 
 
 ## 3. Repository layout
 ```
-index.html, style.css, ix.css, script.js   Website (static, hosted on GitHub Pages)
+index.html, style.css, ix.css, script.js, tryit.js  Website (static, hosted on GitHub Pages)
 data/                                      Data loaded by the website's interactive sections
     tree_count_results.json
     model_comparison.json
     threshold_results.json
+    tryit_model.json
 exports/                                   Reproducibility files
     train_ids.csv, validation_ids.csv, test_ids.csv      Exact customer IDs of each split
     feature_importance.csv, permutation_importance.csv
@@ -50,6 +51,7 @@ Place `UCI_Credit_Card.csv` where the notebook's loading cell expects it (edit t
 
 ## 6. Data split and evaluation design
 - Stratified random split: 70% train (21,000), 15% validation (4,500), 15% test (4,500), `random_state=42`. The exact customer IDs are in `exports/`.
+- Number of trees: the validation curve is flat from about 150 trees (F1 0.5459 at 150, 0.5454 at 300, difference far inside the bootstrap interval). We kept the 300 trees selected earlier and did not re-select after seeing the test result.
 - Models are fitted on the training set, and all comparison and tuning use the validation set.
 - The test set is used once, for the final selected model.
 
@@ -60,7 +62,7 @@ python -m http.server 5500
 Then open `http://localhost:5500`. Opening `index.html` directly from the file system will not load the JSON data files.
 
 ## 8. AI-use disclosure
-We used Claude (Anthropic) for brainstorming the interactive features, debugging and extending the notebook's export code, and writing and testing the website's HTML, CSS and JavaScript. We ran the notebook ourselves and checked the reported results against its outputs. We are responsible for all results and can explain any part of the work.
+We used Claude (Anthropic) for brainstorming the interactive features, debugging and extending the notebook's export code, and writing and testing the website's HTML, CSS and JavaScript, building the Try-it scorer that runs the exported forest in the browser. We ran the notebook ourselves and checked the reported results against its outputs. We are responsible for all results and can explain any part of the work.
 
 ## 9. References
 - Yeh, I. C., & Lien, C. H. (2009). The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients. *Expert Systems with Applications*, 36(2), 2473-2480.
