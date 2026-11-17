@@ -35,11 +35,11 @@ Detailed comparisons and findings are available on the project website.
 
 **Vipra Madanala**
 
-Conducted exploratory data analysis, data quality checks, preprocessing, and dataset splitting. Developed the baseline models and carried out Random Forest training, hyperparameter tuning, and final model selection. Also contributed to result interpretation and website content.
+Conducted exploratory data analysis, data quality checks, preprocessing, and dataset splitting. Developed the baseline models and trained the Random Forest, experimenting with tree depth, leaf size, class weighting, feature selection at each split, and number of trees. Selected the final model using validation results and examined overfitting and the limitations of model selection using a single validation split. Analyzed how changes in model complexity affected predictive performance.
 
-**Adarasandi Sai Ashwika**
+**Adarasandi Sai Ashwika&#x20;**
 
-Conducted model evaluation using classification metrics, confusion matrices, and precision-recall analysis. Worked on error analysis, feature importance, and threshold-based performance evaluation. Also developed the interactive website and integrated the model results.
+Evaluated model performance using classification metrics and confusion matrices, examining the balance between missed defaults and false alarms. Conducted error analysis across repayment-status groups and studied feature importance to identify key predictive variables. Investigated how changing the classification threshold affects precision and recall, and examined the model's difficulty in detecting defaults without recent repayment delays. Developed the interactive website to present and explore the experimental findings.
 
 ## 4. Repository Contents
 
@@ -61,7 +61,7 @@ To reproduce the analysis:
 git clone https://github.com/adarasandiashwika/credit-card-default-rf
 cd credit-card-default-rf
 pip install -r requirements.txt
-jupyter notebook es335-ml-project-notebook.ipynb
+jupyter notebook es335-project-notebook.ipynb
 ```
 
 Download `UCI_Credit_Card.csv`, update the dataset path in the notebook if needed, and run all cells.
@@ -80,3 +80,7 @@ Open `http://localhost:5500` in your browser.
 2. Pedregosa et al. (2011). *Scikit-learn: Machine Learning in Python.* JMLR, 12, 2825–2830.
 
 Additional implementation references are linked in the website's comparison section.
+
+## 7. AI-Use Disclosure
+
+We used Claude (Anthropic) and OpenAI for brainstorming the interactive features, debugging the notebook's export code, and writing and testing the website's HTML, CSS and JavaScript. We ran the notebook ourselves and checked the reported numbers against its outputs. We take responsibility for all results.
